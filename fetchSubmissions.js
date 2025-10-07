@@ -1,5 +1,7 @@
 // fetchSubmissions.js
 import axios from "axios";
+import { gotScraping } from "got-scraping";
+import * as cheerio from "cheerio";
 
 export function isFromYesterday(ts) {
   const date = new Date(ts * 1000);
@@ -13,6 +15,56 @@ export function isFromYesterday(ts) {
     date.getDate() === yesterday.getDate()
   );
 }
+
+const isAbsoluteUrl = (url) => url.startsWith('http://') || url.startsWith('https://');
+
+// Regular expression to identify Codeforces' LaTeX delimiters and capture the content
+const CODEFORCES_MATH_REGEX = /\$\$\$(.*?)\$\$\$/g;
+
+// --- Main Scraper Function ---
+
+async function fetchCodeforcesStatement(problemUrl) {
+  try {
+    const response = await gotScraping({ url: problemUrl });
+    const $ = cheerio.load(response.body);
+
+    const $statement = $("div.problem-statement").clone();
+    $statement.find(".header, .input-specification, .output-specification, .sample-test").remove();
+
+    // Handle images
+    $statement.find("img").each((i, el) => {
+      let src = $(el).attr("src");
+      if (src && !isAbsoluteUrl(src)) src = `https://codeforces.com${src.startsWith('/') ? src : '/' + src}`;
+      $(el).replaceWith(`![Image](${src})`);
+    });
+
+    let html = $statement.html() || "";
+
+    // Convert LaTeX $$$formula$$$ -> $formula$
+    html = html.replace(CODEFORCES_MATH_REGEX, (_, p1) => `$${p1.trim()}$`);
+
+    // Replace <br> with newlines
+    html = html.replace(/<br\s*\/?>/gi, "\n");
+
+    // Convert <li> to Markdown lists
+    html = html.replace(/<li>/gi, "\n* ").replace(/<\/li>/gi, "");
+
+    // Convert <p> to double newline
+    html = html.replace(/<\/p>/gi, "\n\n").replace(/<p[^>]*>/gi, "");
+
+    // Remove remaining tags
+    html = html.replace(/<[^>]+>/g, "");
+
+    // Trim multiple blank lines
+    html = html.replace(/\n{3,}/g, "\n\n").trim();
+
+    return html || "(No problem statement)";
+  } catch (err) {
+    console.error("⚠️ Failed to fetch Codeforces statement:", err.message);
+    return "(Could not fetch problem statement)";
+  }
+}
+
 
 // -------------------- LEETCODE --------------------
 
@@ -152,14 +204,21 @@ export async function fetchLeetCodeSubmissions(
 # ${bestSub.title} (${question.difficulty})
 
 **Platform:** LeetCode  
+
 **Author:** Pratham Parikh (pratham15541)  
-**Submitted at:** ${submittedAt}  
+
+**Submitted at:** ${submittedAt}
+
 **Language:** ${
       bestSub.detail.lang?.verboseName || bestSub.detail.lang?.name || "Unknown"
     }  
-**Runtime:** ${bestSub.detail.runtimeDisplay || bestSub.detail.runtime}  
+
+**Runtime:** ${bestSub.detail.runtimeDisplay || bestSub.detail.runtime} 
+
 **Memory:** ${bestSub.detail.memoryDisplay || bestSub.detail.memory}  
+
 **Problem URL:** [${problemUrl}](${problemUrl})  
+
 **Submission URL:** [${submissionUrl}](${submissionUrl})  
 
 ---
@@ -222,6 +281,7 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
     subs.sort((a, b) => a.timeConsumedMillis - b.timeConsumedMillis);
     const bestSub = subs[0];
     const problem = bestSub.problem;
+
     const contestId = problem.contestId;
     const index = problem.index;
     const name = problem.name;
@@ -237,28 +297,39 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
     const problemUrl = `https://codeforces.com/problemset/problem/${contestId}/${index}`;
     const submissionUrl = `https://codeforces.com/contest/${contestId}/submission/${submissionId}`;
 
-    // Keep markdown unchanged, just remove Puppeteer
+    // 🔥 Fetch the actual problem statement
+    const problemStatement = await fetchCodeforcesStatement(problemUrl);
+
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})
 
 **Platform:** Codeforces  
-**Author:** Pratham Parikh (pratham15541)  
+
+**Author:** ${CODEFORCES_HANDLE}  
+
 **Submitted at:** ${submittedAt}  
+
 **Language:** ${lang}  
+
 **Verdict:** ${verdict}  
+
 **Time:** ${time} ms  
+
 **Memory:** ${(memory / 1024).toFixed(1)} KB  
+
 **Problem URL:** [${problemUrl}](${problemUrl})  
+
 **Submission URL:** [${submissionUrl}](${submissionUrl})  
 
 ---
 
 ## Problem Statement
-${problemUrl}
+${problemStatement}
 
 ---
 
 ## Submitted Code
+(Your solution code goes here)
 
 ---
 
