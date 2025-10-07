@@ -1,0 +1,51 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+import {
+  fetchLeetCodeSubmissions,
+  fetchCodeforcesSubmissions,
+} from "./fetchSubmissions.js";
+import { pushToGitHub } from "./pushGithub.js";
+import { pushToNotion } from "./pushNotion.js";
+import { updateReadme } from "./updateReadme.js";
+
+// ----------------- MAIN -----------------
+async function run() {
+  const leetcodeResults = await fetchLeetCodeSubmissions(
+    process.env.LEETCODE_SESSION,
+    process.env.LEETCODE_USERNAME
+  );
+
+  const codeforcesResults = await fetchCodeforcesSubmissions(
+    process.env.CODEFORCE_USERNAME
+  );
+
+  const allResults = [...leetcodeResults, ...codeforcesResults];
+
+  // Push each file to GitHub & Notion
+  for (const res of allResults) {
+    const folder = res.fileName.includes("/") ? res.fileName.split("/")[0] : "";
+    const fileName = res.fileName.includes("/")
+      ? res.fileName.split("/")[1]
+      : res.fileName;
+
+    await pushToGitHub(folder, fileName, res.markdown, res.meta);
+    await pushToNotion({
+      title: res.title,
+      markdown: res.markdown,
+      meta: res.meta,
+      tags: res.tags,
+      problemUrl: res.problemUrl,
+      submissionUrl: res.submissionUrl,
+      difficulty: res.difficulty,
+      platform: res.platform,
+    });
+  }
+
+  // Update README directly from GitHub
+  await updateReadme(allResults);
+
+  console.log("\n🎉 All submissions processed and pushed!");
+}
+
+run();

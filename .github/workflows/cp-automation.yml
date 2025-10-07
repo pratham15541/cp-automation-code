@@ -1,0 +1,58 @@
+name: Run Main JS
+
+# Trigger workflow on push to main branch, manually, or schedule
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Every day at midnight UTC
+
+jobs:
+  run-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 # Automatically cancel if job runs >5 minutes
+
+    # Pass secrets as environment variables
+    env:
+      LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+      LEETCODE_USERNAME: ${{ secrets.LEETCODE_USERNAME }}
+      CODEFORCE_USERNAME: ${{ secrets.CODEFORCE_USERNAME }}
+      PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+      PERSONAL_GITHUB_REPO: ${{ secrets.PERSONAL_GITHUB_REPO }}
+      PERSONAL_GITHUB_BRANCH: ${{ secrets.PERSONAL_GITHUB_BRANCH }}
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # --- Debug: list files in repo ---
+      - name: List repository files
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -R
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # --- Debug: show Node & npm versions ---
+      - name: Node & npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        run: npm install
+
+      # --- Debug: list installed node_modules ---
+      - name: List node_modules
+        run: ls -R node_modules || echo "No node_modules found"
+
+      - name: Run main.js
+        run: node main.js

@@ -1,0 +1,20 @@
+{
+  "name": "n8n-new",
+  "version": "1.0.0",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "Pratham Parikh",
+  "license": "ISC",
+  "description": "Automate fetching CP submissions and updating Notion",
+  "dependencies": {
+    "@notionhq/client": "^5.1.0",
+    "@octokit/rest": "^22.0.0",
+    "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
+    "html-to-notion-blocks": "^0.1.1"
+  }
+}
