@@ -254,12 +254,11 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
 ---
 
 ## Problem Statement
-[${problemUrl}](${problemUrl})
+${problemUrl}
 
 ---
 
 ## Submitted Code
-[${submissionUrl}](${submissionUrl})
 
 ---
 
