@@ -117,17 +117,23 @@ function mergeSections(oldContent, sections) {
   for (const [folder, section] of Object.entries(sections)) {
     const capitalizedFolder = folder.charAt(0).toUpperCase() + folder.slice(1);
 
-    const pattern = new RegExp(`## ${capitalizedFolder}[\\s\\S]*?(?=## |$)`, "i");
+    const pattern = new RegExp(
+      `## ${capitalizedFolder}[\\s\\S]*?(?=## |$)`,
+      "i"
+    );
 
     if (pattern.test(newContent)) {
-      newContent = newContent.replace(pattern, section.trim());
+      newContent = newContent.replace(
+        pattern,
+        section.trim().replace(/\n*$/, "\n\n")
+      );
     } else {
-      // Always create section if not found
-      newContent += `\n\n${section.trim()}\n`;
+      // Ensure proper spacing before new section
+      newContent = newContent.replace(/\n*$/, "\n\n") + section.trim() + "\n\n";
     }
   }
 
-  return newContent.trim() + "\n";
+  return newContent.replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
 // ---------------- Main update function ----------------
@@ -158,5 +164,7 @@ export async function updateReadme(allResults) {
     sha,
   });
 
-  console.log("✅ README.md updated on GitHub (new submissions merged into existing tables)");
+  console.log(
+    "✅ README.md updated on GitHub (new submissions merged into existing tables)"
+  );
 }
