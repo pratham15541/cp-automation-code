@@ -23,12 +23,12 @@ export async function pushToNotion(submission) {
 
   try {
     // ---- Extract the submitted code ----
-    const codeBlockMatch = markdown.match(/```(\w+)?\n([\s\S]*?)```/);
+const codeBlockMatch = markdown.match(/## Submitted Code\s*```(\w+)?\n([\s\S]*?)```/);
     const codeLanguage = codeBlockMatch ? codeBlockMatch[1] || "java" : "java";
     const codeContent = codeBlockMatch ? codeBlockMatch[2].trim() : "";
 
     // ---- Extract the problem statement ----
-    const problemStatementMatch = markdown.match(/## Problem Statement([\s\S]*?)---/);
+   const problemStatementMatch = markdown.match(/## Problem Statement([\s\S]*?)(?=## Submitted Code|---)/);
    let problemStatementRaw = problemStatementMatch
   ? problemStatementMatch[1].trim()
   : "No problem statement available.";

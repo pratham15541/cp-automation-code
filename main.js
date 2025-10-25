@@ -4,10 +4,10 @@ dotenv.config();
 import {
   fetchLeetCodeSubmissions,
   fetchCodeforcesSubmissions,
-} from "./fetchSubmissions.js";
-import { pushToGitHub } from "./pushGithub.js";
-import { pushToNotion } from "./pushNotion.js";
-import { updateReadme } from "./updateReadme.js";
+} from "./src/fetchSubmissions.js";
+import { pushToGitHub } from "./src/pushGithub.js";
+import { pushToNotion } from "./src/pushNotion.js";
+import { updateReadme } from "./src/updateReadme.js";
 
 // ----------------- MAIN -----------------
 async function run() {

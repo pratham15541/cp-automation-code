@@ -16,55 +16,109 @@ export function isFromYesterday(ts) {
   );
 }
 
-const isAbsoluteUrl = (url) => url.startsWith('http://') || url.startsWith('https://');
+function isAbsoluteUrl(url) {
+  return /^https?:\/\//i.test(url);
+}
+
+const formatSamples = (samples) => {
+  const multi = samples.length > 1;
+
+  return samples
+    .map((sample, i) => {
+      const index = multi ? ` ${i + 1}` : "";
+      return (
+        `### Sample Input${index}\n` +
+        "```\n" +
+        sample.input.trim() +
+        "\n```\n\n" +
+        `### Sample Output${index}\n` +
+        "```\n" +
+        sample.output.trim() +
+        "\n```"
+      );
+    })
+    .join("\n\n");
+};
 
 // Regular expression to identify Codeforces' LaTeX delimiters and capture the content
-const CODEFORCES_MATH_REGEX = /\$\$\$(.*?)\$\$\$/g;
+const CODEFORCES_MATH_REGEX = /\$\$+([\s\S]*?)\$\$+/g;
 
 // --- Main Scraper Function ---
 
-async function fetchCodeforcesStatement(problemUrl) {
+export async function fetchCodeforcesStatement(problemUrl) {
   try {
     const response = await gotScraping({ url: problemUrl });
     const $ = cheerio.load(response.body);
 
     const $statement = $("div.problem-statement").clone();
-    $statement.find(".header, .input-specification, .output-specification, .sample-test").remove();
+
+    // Extract sample inputs/outputs before removing them
+    const samples = [];
+    $statement.find(".sample-test").each((_, el) => {
+      const inputs = [];
+      const outputs = [];
+
+      $(el)
+        .find(".input pre")
+        .each((_, inputEl) => {
+          inputs.push($(inputEl).text().trim());
+        });
+
+      $(el)
+        .find(".output pre")
+        .each((_, outputEl) => {
+          outputs.push($(outputEl).text().trim());
+        });
+
+      for (let i = 0; i < Math.max(inputs.length, outputs.length); i++) {
+        samples.push({
+          input: inputs[i] || "",
+          output: outputs[i] || "",
+        });
+      }
+    });
+
+    // Clean the main statement
+    $statement
+      .find(
+        ".header, .input-specification, .output-specification, .sample-test"
+      )
+      .remove();
 
     // Handle images
     $statement.find("img").each((i, el) => {
       let src = $(el).attr("src");
-      if (src && !isAbsoluteUrl(src)) src = `https://codeforces.com${src.startsWith('/') ? src : '/' + src}`;
+      if (src && !isAbsoluteUrl(src))
+        src = `https://codeforces.com${src.startsWith("/") ? src : "/" + src}`;
       $(el).replaceWith(`![Image](${src})`);
     });
 
     let html = $statement.html() || "";
 
-    // Convert LaTeX $$$formula$$$ -> $formula$
-    html = html.replace(CODEFORCES_MATH_REGEX, (_, p1) => `$${p1.trim()}$`);
+    // Normalize LaTeX, tags, etc.
+    html = html
+      .replace(CODEFORCES_MATH_REGEX, (_, p1) => `$${p1.trim()}$`)
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<li>/gi, "\n* ")
+      .replace(/<\/li>/gi, "")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<p[^>]*>/gi, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
-    // Replace <br> with newlines
-    html = html.replace(/<br\s*\/?>/gi, "\n");
-
-    // Convert <li> to Markdown lists
-    html = html.replace(/<li>/gi, "\n* ").replace(/<\/li>/gi, "");
-
-    // Convert <p> to double newline
-    html = html.replace(/<\/p>/gi, "\n\n").replace(/<p[^>]*>/gi, "");
-
-    // Remove remaining tags
-    html = html.replace(/<[^>]+>/g, "");
-
-    // Trim multiple blank lines
-    html = html.replace(/\n{3,}/g, "\n\n").trim();
-
-    return html || "(No problem statement)";
+    return {
+      statement: html || "(No problem statement)",
+      samples: samples.length ? samples : [{ input: "", output: "" }],
+    };
   } catch (err) {
     console.error("⚠️ Failed to fetch Codeforces statement:", err.message);
-    return "(Could not fetch problem statement)";
+    return {
+      statement: "(Could not fetch problem statement)",
+      samples: [],
+    };
   }
 }
-
 
 // -------------------- LEETCODE --------------------
 
@@ -298,7 +352,9 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
     const submissionUrl = `https://codeforces.com/contest/${contestId}/submission/${submissionId}`;
 
     // 🔥 Fetch the actual problem statement
-    const problemStatement = await fetchCodeforcesStatement(problemUrl);
+    const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
+    const problemStatement =
+      statement + "\n\n" + formatSamples(samples);
 
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})
@@ -329,7 +385,9 @@ ${problemStatement}
 ---
 
 ## Submitted Code
+\`\`\`${lang.toLowerCase()}
 (Your solution code goes here)
+\`\`\`
 
 ---
 
@@ -342,7 +400,9 @@ ${(problem.tags || []).map((t) => `- ${t}`).join("\n")}
       title: name,
       fileName: `codeforces/${contestId}-${index}-${safeName}.md`,
       markdown,
-      meta: `Verdict: ${verdict}, Time: ${time} ms, Memory: ${(memory / 1024).toFixed(1)} KB`,
+      meta: `Verdict: ${verdict}, Time: ${time} ms, Memory: ${(
+        memory / 1024
+      ).toFixed(1)} KB`,
       tags: problem.tags || [],
       problemUrl,
       submissionUrl,
