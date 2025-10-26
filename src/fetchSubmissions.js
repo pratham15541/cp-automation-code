@@ -385,9 +385,7 @@ ${problemStatement}
 ---
 
 ## Submitted Code
-\`\`\`${lang.toLowerCase()}
 (Your solution code goes here)
-\`\`\`
 
 ---
 

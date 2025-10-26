@@ -62,6 +62,17 @@ and can also be triggered **manually** from the Actions tab.
 
 ---
 
+## ✅ To-Do List
+
+-   [ ] Add AI code best approach and explanation of both approach
+-   [ ] AI time and space complexity analysis for both codes.
+-   [ ] AI VIDEO GENERATION FOR BOTH CODE (GEMINI VEO) 
+-   [ ] Add detailed statistics and visualizations of progress.
+-   [ ] Improve error handling and notification system for failed runs.
+-   [ ] Create a web interface for easier configuration and monitoring.
+
+---
+
 ## 🧑‍💻 Author
 
 **Pratham Parikh**  
