@@ -2,6 +2,7 @@
 import axios from "axios";
 import { gotScraping } from "got-scraping";
 import * as cheerio from "cheerio";
+import { codeforces_submitted_code } from "./extract_codeforce_code.js";
 
 export function isFromYesterday(ts) {
   const date = new Date(ts * 1000);
@@ -47,15 +48,10 @@ const CODEFORCES_MATH_REGEX = /\$\$+([\s\S]*?)\$\$+/g;
 
 export async function fetchCodeforcesStatement(problemUrl) {
   try {
-    const response = await gotScraping({ url: problemUrl,headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://codeforces.com/",
-  }, });
+    const response = await gotScraping({ url: problemUrl });
     const $ = cheerio.load(response.body);
 
     const $statement = $("div.problem-statement").clone();
-    console.log($.html());
 
     // Extract sample inputs/outputs before removing them
     const samples = [];
@@ -360,7 +356,7 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
     const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
     const problemStatement = statement + "\n\n" + formatSamples(samples);
 
-    const code = '';
+    const code = await codeforces_submitted_code(submissionUrl);
 
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})

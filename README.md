@@ -17,6 +17,9 @@ This project automatically fetches your **LeetCode** and **Codeforces** submissi
 
 This project runs automatically using **GitHub Actions**.
 
+### Codeforce cookies export using `cookie-editor` and convert to base64 using
+`base64 -w 0 codeforces-cookies.json`
+
 ### Environment Variables (Secrets)
 You’ll need to add these secrets in your repository:
 
@@ -30,6 +33,7 @@ You’ll need to add these secrets in your repository:
 | `PERSONAL_GITHUB_BRANCH` | Usually `main` |
 | `NOTION_TOKEN` | Notion API integration token |
 | `NOTION_DATABASE_ID` | Target Notion database ID |
+| `COOKIES_BASE64` | Codeforce cookies base64 version |
 
 ---
 
