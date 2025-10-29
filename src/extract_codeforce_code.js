@@ -10,6 +10,7 @@ export const codeforces_submitted_code = async (submissionUrl) => {
   const cookiesString = process.env.COOKIES_BASE64
     && Buffer.from(process.env.COOKIES_BASE64, "base64").toString("utf-8");
   let cookies = JSON.parse(cookiesString);
+  console.log("Submission URL:", submissionUrl);
 
   cookies = cookies.map((c) => {
     if (typeof c.sameSite !== "string") delete c.sameSite;
@@ -17,7 +18,7 @@ export const codeforces_submitted_code = async (submissionUrl) => {
   });
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

@@ -356,7 +356,8 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
     const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
     const problemStatement = statement + "\n\n" + formatSamples(samples);
 
-    const code = await codeforces_submitted_code(submissionUrl);
+    // const code = await codeforces_submitted_code(submissionUrl);
+    const code = '';
 
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})
