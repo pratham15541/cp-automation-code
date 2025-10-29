@@ -44,7 +44,10 @@ const formatSamples = (samples) => {
 // Regular expression to identify Codeforces' LaTeX delimiters and capture the content
 const CODEFORCES_MATH_REGEX = /\$\$+([\s\S]*?)\$\$+/g;
 
-export async function fetchCodeforcesStatementWithFallback(problemsetUrl, contestUrl) {
+export async function fetchCodeforcesStatementWithFallback(
+  problemsetUrl,
+  contestUrl
+) {
   try {
     let result = await fetchCodeforcesStatement(problemsetUrl);
 
@@ -78,7 +81,6 @@ export async function fetchCodeforcesStatementWithFallback(problemsetUrl, contes
   }
 }
 
-
 // --- Main Scraper Function ---
 
 export async function fetchCodeforcesStatement(problemUrl) {
@@ -90,28 +92,37 @@ export async function fetchCodeforcesStatement(problemUrl) {
 
     // Extract sample inputs/outputs before removing them
     const samples = [];
+
     $statement.find(".sample-test").each((_, el) => {
-      const inputs = [];
-      const outputs = [];
+      // Get the raw text of input and output <pre>
+      const inputPre = $(el).find(".input pre");
+      const outputPre = $(el).find(".output pre");
 
-      $(el)
-        .find(".input pre")
-        .each((_, inputEl) => {
-          inputs.push($(inputEl).text().trim());
-        });
+      // Function to normalize CF text
+      const normalize = (preEl) => {
+        // Grab text content and split by any <div> inside <pre>
+        const lines = [];
+        $(preEl)
+          .children()
+          .each((_, child) => {
+            lines.push($(child).text().trim());
+          });
 
-      $(el)
-        .find(".output pre")
-        .each((_, outputEl) => {
-          outputs.push($(outputEl).text().trim());
-        });
+        // If there are no child divs, just take the text
+        if (lines.length === 0) {
+          return $(preEl).text().trim();
+        }
 
-      for (let i = 0; i < Math.max(inputs.length, outputs.length); i++) {
-        samples.push({
-          input: inputs[i] || "",
-          output: outputs[i] || "",
-        });
-      }
+        return lines.join("\n");
+      };
+
+      const inputText = normalize(inputPre);
+      const outputText = normalize(outputPre);
+
+      samples.push({
+        input: inputText + "\n",
+        output: outputText + "\n",
+      });
     });
 
     // Clean the main statement
