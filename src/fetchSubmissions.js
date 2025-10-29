@@ -47,10 +47,15 @@ const CODEFORCES_MATH_REGEX = /\$\$+([\s\S]*?)\$\$+/g;
 
 export async function fetchCodeforcesStatement(problemUrl) {
   try {
-    const response = await gotScraping({ url: problemUrl });
+    const response = await gotScraping({ url: problemUrl,headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://codeforces.com/",
+  }, });
     const $ = cheerio.load(response.body);
 
     const $statement = $("div.problem-statement").clone();
+    console.log($.html());
 
     // Extract sample inputs/outputs before removing them
     const samples = [];
@@ -353,8 +358,9 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
 
     // 🔥 Fetch the actual problem statement
     const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
-    const problemStatement =
-      statement + "\n\n" + formatSamples(samples);
+    const problemStatement = statement + "\n\n" + formatSamples(samples);
+
+    const code = '';
 
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})
@@ -385,7 +391,10 @@ ${problemStatement}
 ---
 
 ## Submitted Code
-(Your solution code goes here)
+
+\`\`\`${lang.replace(/\d+/g, "").trim().toLowerCase()}
+${code}
+\`\`\`
 
 ---
 
