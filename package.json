@@ -19,9 +19,6 @@
     "dotenv": "^17.2.3",
     "got-scraping": "^4.1.2",
     "he": "^1.2.0",
-    "html-to-notion-blocks": "^0.1.1",
-    "puppeteer": "^24.26.1",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "html-to-notion-blocks": "^0.1.1"
   }
 }

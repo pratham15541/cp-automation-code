@@ -2,7 +2,6 @@
 import axios from "axios";
 import { gotScraping } from "got-scraping";
 import * as cheerio from "cheerio";
-import { codeforces_submitted_code } from "./extract_codeforce_code.js";
 
 export function isFromYesterday(ts) {
   const date = new Date(ts * 1000);
@@ -354,10 +353,8 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
 
     // 🔥 Fetch the actual problem statement
     const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
-    const problemStatement = statement + "\n\n" + formatSamples(samples);
-
-    // const code = await codeforces_submitted_code(submissionUrl);
-    const code = '';
+    const problemStatement =
+      statement + "\n\n" + formatSamples(samples);
 
     const markdown = `
 # ${name} (${problem.rating || "Unrated"})
@@ -388,10 +385,7 @@ ${problemStatement}
 ---
 
 ## Submitted Code
-
-\`\`\`${lang.replace(/\d+/g, "").trim().toLowerCase()}
-${code}
-\`\`\`
+(Your solution code goes here)
 
 ---
 
