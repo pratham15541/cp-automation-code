@@ -44,6 +44,41 @@ const formatSamples = (samples) => {
 // Regular expression to identify Codeforces' LaTeX delimiters and capture the content
 const CODEFORCES_MATH_REGEX = /\$\$+([\s\S]*?)\$\$+/g;
 
+export async function fetchCodeforcesStatementWithFallback(problemsetUrl, contestUrl) {
+  try {
+    let result = await fetchCodeforcesStatement(problemsetUrl);
+
+    // If problemset fetch failed, try contest URL
+    if (
+      !result ||
+      !result.statement ||
+      result.statement.includes("Could not fetch") ||
+      result.statement.includes("No problem statement")
+    ) {
+      console.log("Problemset URL failed, trying contest URL...");
+      if (contestUrl) {
+        result = await fetchCodeforcesStatement(contestUrl);
+      }
+    }
+
+    // If still no valid result, return empty
+    if (
+      !result ||
+      !result.statement ||
+      result.statement.includes("Could not fetch") ||
+      result.statement.includes("No problem statement")
+    ) {
+      return { statement: "", samples: [] };
+    }
+
+    return result;
+  } catch (err) {
+    console.error("Unexpected error:", err.message);
+    return { statement: "", samples: [] };
+  }
+}
+
+
 // --- Main Scraper Function ---
 
 export async function fetchCodeforcesStatement(problemUrl) {
@@ -351,9 +386,13 @@ export async function fetchCodeforcesSubmissions(CODEFORCES_HANDLE) {
 
     const problemUrl = `https://codeforces.com/problemset/problem/${contestId}/${index}`;
     const submissionUrl = `https://codeforces.com/contest/${contestId}/submission/${submissionId}`;
+    const contestUrl = `https://codeforces.com/contest/${contestId}/problem/${index}`;
 
     // 🔥 Fetch the actual problem statement
-    const { statement, samples } = await fetchCodeforcesStatement(problemUrl);
+    const { statement, samples } = await fetchCodeforcesStatementWithFallback(
+      problemUrl,
+      contestUrl
+    );
     const problemStatement = statement + "\n\n" + formatSamples(samples);
 
     const code = await codeforces_submitted_code(submissionUrl);
