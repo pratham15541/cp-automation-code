@@ -10,7 +10,7 @@ export const codeforces_submitted_code = async (submissionUrl) => {
     const cookiesString = process.env.COOKIES_BASE64
       && Buffer.from(process.env.COOKIES_BASE64, "base64").toString("utf-8");
     let cookies = cookiesString ? JSON.parse(cookiesString) : [];
-
+    console.log("Cookies count:", cookies.length); //debug line
     cookies = cookies.map((c) => {
       if (typeof c.sameSite !== "string") delete c.sameSite;
       return c;
@@ -57,6 +57,7 @@ export const codeforces_submitted_code = async (submissionUrl) => {
     }
 
     await browser.close();
+    console.log(code ? "Code fetched successfully." : "No code found.");
     return code || "";
 
   } catch (err) {
