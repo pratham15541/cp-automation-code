@@ -8,6 +8,7 @@ import {
 import { pushToGitHub } from "./src/pushGithub.js";
 import { pushToNotion } from "./src/pushNotion.js";
 import { updateReadme } from "./src/updateReadme.js";
+import { fetchAtCoderAcceptedSubmissions } from "./src/fetchAtCoderSubmission.js";
 
 // ----------------- MAIN -----------------
 async function run() {
@@ -20,7 +21,9 @@ async function run() {
     process.env.CODEFORCE_USERNAME
   );
 
-  const allResults = [...leetcodeResults, ...codeforcesResults];
+  const atcoderResults = await fetchAtCoderAcceptedSubmissions();
+
+  const allResults = [...leetcodeResults, ...codeforcesResults, ...atcoderResults];
 
   // Push each file to GitHub & Notion
   for (const res of allResults) {
