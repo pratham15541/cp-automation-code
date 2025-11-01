@@ -64,9 +64,6 @@ export const codeforces_submitted_code = async (submissionUrl) => {
 
     await browser.close();
     console.log(code ? "Code fetched successfully." : "No code found.");
-    console.log("-----");
-    console.log(code);
-    console.log("-----");
     return code || "";
   } catch (err) {
     console.log("Unexpected error in code fetch:", err.message);
