@@ -22,8 +22,6 @@ jobs:
       NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
       NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
       COOKIES_BASE64: ${{ secrets.COOKIES_BASE64 }}
-      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
-      PUPPETEER_EXECUTABLE_PATH: ""
 
     steps:
       - name: Checkout repository
