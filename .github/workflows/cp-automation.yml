@@ -22,6 +22,8 @@ jobs:
       NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
       NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
       COOKIES_BASE64: ${{ secrets.COOKIES_BASE64 }}
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
+      PUPPETEER_EXECUTABLE_PATH: ""
 
     steps:
       - name: Checkout repository
@@ -64,10 +66,6 @@ jobs:
       # --- Debug: list installed node_modules ---
       - name: List node_modules
         run: ls -R node_modules || echo "No node_modules found"
-
-      - name: Test headless Chrome
-        run: |
-          node -e "import('puppeteer').then(p=>p.default.launch().then(b=>{console.log('✅ Launched');return b.close();}));"
 
       - name: Run main.js
         run: node main.js
