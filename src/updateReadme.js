@@ -141,7 +141,7 @@ export async function updateReadme(allResults) {
   const { content: oldContent, sha } = await fetchRemoteReadme();
   const sections = {};
 
-  ["leetcode", "codeforces"].forEach((folder) => {
+  ["leetcode", "codeforces", "atcoder"].forEach((folder) => {
     const existingTagMap = parseExistingSection(oldContent, folder);
 
     // ✅ Case-insensitive folder match fix
