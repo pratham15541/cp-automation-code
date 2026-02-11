@@ -14,7 +14,7 @@
     "@notionhq/client": "^5.1.0",
     "@octokit/rest": "^22.0.0",
     "@tryfabric/martian": "^1.2.4",
-    "axios": "^1.12.2",
+    "axios": "^1.13.5",
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.3",
     "got-scraping": "^4.1.2",
